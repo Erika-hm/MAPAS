@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title>Delitos por colonia (enero - octubre 2024)</title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="data/Delitosporcolonia1ene31oct_1.js"></script>
+        <script src="data/Sectores_2.js"></script>
+        <script src="data/Alcaldias_3.js"></script>
+        <script src="data/Lesionesdolosas_4.js"></script>
+        <script src="data/Homicidio_5.js"></script>
+        <script>
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[19.033762026351415,-99.56894321605003],[19.606412919385736,-98.73687147652934]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var title = new L.Control({'position':'topright'});
+        title.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info');
+            this.update();
+            return this._div;
+        };
+        title.update = function () {
+            this._div.innerHTML = '<h2>Delitos por colonia (enero - octubre 2024)</h2>';
+        };
+        title.addTo(map);
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_Positron_0');
+        map.getPane('pane_Positron_0').style.zIndex = 400;
+        var layer_Positron_0 = L.tileLayer('https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+            pane: 'pane_Positron_0',
+            opacity: 1.0,
+            attribution: '<a href="https://cartodb.com/basemaps/">Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL.</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_Positron_0;
+        map.addLayer(layer_Positron_0);
+        function pop_Delitosporcolonia1ene31oct_1(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Alcaldía</th>\
+                        <td>' + (feature.properties['NOMDT'] !== null ? autolinker.link(feature.properties['NOMDT'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Colonia</th>\
+                        <td>' + (feature.properties['NOMUT'] !== null ? autolinker.link(feature.properties['NOMUT'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Total de Delitos</th>\
+                        <td>' + (feature.properties['TOTAL DELI'] !== null ? autolinker.link(feature.properties['TOTAL DELI'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Tasa por 100 000 hab</th>\
+                        <td>' + (feature.properties['TASA X 100'] !== null ? autolinker.link(feature.properties['TASA X 100'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Homicidio Doloso</th>\
+                        <td>' + (feature.properties['Homicidios'] !== null ? autolinker.link(feature.properties['Homicidios'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Lesiones dolosas por DAF</th>\
+                        <td>' + (feature.properties['Lesiones'] !== null ? autolinker.link(feature.properties['Lesiones'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Robo a Negocio</th>\
+                        <td>' + (feature.properties['RoboNegoci'] !== null ? autolinker.link(feature.properties['RoboNegoci'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Robo a Cuenta habiente</th>\
+                        <td>' + (feature.properties['RoboCuenta'] !== null ? autolinker.link(feature.properties['RoboCuenta'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Robo a Casa Habitación</th>\
+                        <td>' + (feature.properties['RoboCasaHa'] !== null ? autolinker.link(feature.properties['RoboCasaHa'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Robo a Repártidor</th>\
+                        <td>' + (feature.properties['RoboRepart'] !== null ? autolinker.link(feature.properties['RoboRepart'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Robo a Conductor de Vehículo</th>\
+                        <td>' + (feature.properties['RoboConduc'] !== null ? autolinker.link(feature.properties['RoboConduc'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Robo a Transeúnte en Vía Pública</th>\
+                        <td>' + (feature.properties['RoboTranse'] !== null ? autolinker.link(feature.properties['RoboTranse'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Robo a Bordo de Metro</th>\
+                        <td>' + (feature.properties['RoboMetro'] !== null ? autolinker.link(feature.properties['RoboMetro'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Robo a Bordo de Metrobús</th>\
+                        <td>' + (feature.properties['RoboMetrob'] !== null ? autolinker.link(feature.properties['RoboMetrob'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Robo a Bordo de Taxi</th>\
+                        <td>' + (feature.properties['RoboTaxi'] !== null ? autolinker.link(feature.properties['RoboTaxi'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Robo a Bordo de Microbús</th>\
+                        <td>' + (feature.properties['RoboMicrob'] !== null ? autolinker.link(feature.properties['RoboMicrob'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Robo de Vehículo Con Violencia</th>\
+                        <td>' + (feature.properties['RoboVehiC/'] !== null ? autolinker.link(feature.properties['RoboVehiC/'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Robo de Vehículo S/V</th>\
+                        <td>' + (feature.properties['RoboVehiS/'] !== null ? autolinker.link(feature.properties['RoboVehiS/'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Robo a Transportista</th>\
+                        <td>' + (feature.properties['RTransport'] !== null ? autolinker.link(feature.properties['RTransport'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Delitosporcolonia1ene31oct_1_0(feature) {
+            if (feature.properties['TOTAL DELI'] >= 0.000000 && feature.properties['TOTAL DELI'] <= 7.000000 ) {
+                return {
+                pane: 'pane_Delitosporcolonia1ene31oct_1',
+                stroke: false, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(248,236,235,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['TOTAL DELI'] >= 7.000000 && feature.properties['TOTAL DELI'] <= 18.000000 ) {
+                return {
+                pane: 'pane_Delitosporcolonia1ene31oct_1',
+                stroke: false, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(237,208,206,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['TOTAL DELI'] >= 18.000000 && feature.properties['TOTAL DELI'] <= 36.000000 ) {
+                return {
+                pane: 'pane_Delitosporcolonia1ene31oct_1',
+                stroke: false, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(201,131,127,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['TOTAL DELI'] >= 36.000000 && feature.properties['TOTAL DELI'] <= 86.000000 ) {
+                return {
+                pane: 'pane_Delitosporcolonia1ene31oct_1',
+                stroke: false, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(191,10,0,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['TOTAL DELI'] >= 86.000000 && feature.properties['TOTAL DELI'] <= 193.000000 ) {
+                return {
+                pane: 'pane_Delitosporcolonia1ene31oct_1',
+                stroke: false, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(59,4,1,1.0)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_Delitosporcolonia1ene31oct_1');
+        map.getPane('pane_Delitosporcolonia1ene31oct_1').style.zIndex = 401;
+        map.getPane('pane_Delitosporcolonia1ene31oct_1').style['mix-blend-mode'] = 'normal';
+        var layer_Delitosporcolonia1ene31oct_1 = new L.geoJson(json_Delitosporcolonia1ene31oct_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Delitosporcolonia1ene31oct_1',
+            layerName: 'layer_Delitosporcolonia1ene31oct_1',
+            pane: 'pane_Delitosporcolonia1ene31oct_1',
+            onEachFeature: pop_Delitosporcolonia1ene31oct_1,
+            style: style_Delitosporcolonia1ene31oct_1_0,
+        });
+        bounds_group.addLayer(layer_Delitosporcolonia1ene31oct_1);
+        map.addLayer(layer_Delitosporcolonia1ene31oct_1);
+        function pop_Sectores_2(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['gid'] !== null ? autolinker.link(feature.properties['gid'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id'] !== null ? autolinker.link(feature.properties['id'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['delegacion'] !== null ? autolinker.link(feature.properties['delegacion'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['zona'] !== null ? autolinker.link(feature.properties['zona'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['cve_zona'] !== null ? autolinker.link(feature.properties['cve_zona'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['consec_reg'] !== null ? autolinker.link(feature.properties['consec_reg'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['consec_sec'] !== null ? autolinker.link(feature.properties['consec_sec'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nombre_sec'] !== null ? autolinker.link(feature.properties['nombre_sec'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ct'] !== null ? autolinker.link(feature.properties['ct'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['x'] !== null ? autolinker.link(feature.properties['x'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['y'] !== null ? autolinker.link(feature.properties['y'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id_alcaldi'] !== null ? autolinker.link(feature.properties['id_alcaldi'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Sectores_2_0() {
+            return {
+                pane: 'pane_Sectores_2',
+                opacity: 1,
+                color: 'rgba(230,47,120,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(225,89,137,0.0)',
+                interactive: false,
+            }
+        }
+        map.createPane('pane_Sectores_2');
+        map.getPane('pane_Sectores_2').style.zIndex = 402;
+        map.getPane('pane_Sectores_2').style['mix-blend-mode'] = 'normal';
+        var layer_Sectores_2 = new L.geoJson(json_Sectores_2, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_Sectores_2',
+            layerName: 'layer_Sectores_2',
+            pane: 'pane_Sectores_2',
+            onEachFeature: pop_Sectores_2,
+            style: style_Sectores_2_0,
+        });
+        bounds_group.addLayer(layer_Sectores_2);
+        function pop_Alcaldias_3(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['nomgeo'] !== null ? autolinker.link(feature.properties['nomgeo'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['cve_mun'] !== null ? autolinker.link(feature.properties['cve_mun'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['g_pnt_2'] !== null ? autolinker.link(feature.properties['g_pnt_2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['geo_shp'] !== null ? autolinker.link(feature.properties['geo_shp'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['frecuencia'] !== null ? autolinker.link(feature.properties['frecuencia'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Alcaldias_3_0() {
+            return {
+                pane: 'pane_Alcaldias_3',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(152,125,183,0.0)',
+                interactive: false,
+            }
+        }
+        map.createPane('pane_Alcaldias_3');
+        map.getPane('pane_Alcaldias_3').style.zIndex = 403;
+        map.getPane('pane_Alcaldias_3').style['mix-blend-mode'] = 'normal';
+        var layer_Alcaldias_3 = new L.geoJson(json_Alcaldias_3, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_Alcaldias_3',
+            layerName: 'layer_Alcaldias_3',
+            pane: 'pane_Alcaldias_3',
+            onEachFeature: pop_Alcaldias_3,
+            style: style_Alcaldias_3_0,
+        });
+        bounds_group.addLayer(layer_Alcaldias_3);
+        map.addLayer(layer_Alcaldias_3);
+        function pop_Lesionesdolosas_4(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Carpeta</th>\
+                        <td>' + (feature.properties['Carpeta'] !== null ? autolinker.link(feature.properties['Carpeta'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Fecha inicio</th>\
+                        <td>' + (feature.properties['Fecha inicio'] !== null ? autolinker.link(feature.properties['Fecha inicio'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Fecha hechos</th>\
+                        <td>' + (feature.properties['Fecha hechos'] !== null ? autolinker.link(feature.properties['Fecha hechos'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Hora hechos</th>\
+                        <td>' + (feature.properties['Hora hechos'] !== null ? autolinker.link(feature.properties['Hora hechos'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Exordio</th>\
+                        <td>' + (feature.properties['Exordio'] !== null ? autolinker.link(feature.properties['Exordio'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Alcaldía</th>\
+                        <td>' + (feature.properties['Alcaldía'] !== null ? autolinker.link(feature.properties['Alcaldía'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Colonia</th>\
+                        <td>' + (feature.properties['Colonia'] !== null ? autolinker.link(feature.properties['Colonia'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Lesionesdolosas_4_0() {
+            return {
+                pane: 'pane_Lesionesdolosas_4',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(31,120,180,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Lesionesdolosas_4');
+        map.getPane('pane_Lesionesdolosas_4').style.zIndex = 404;
+        map.getPane('pane_Lesionesdolosas_4').style['mix-blend-mode'] = 'normal';
+        var layer_Lesionesdolosas_4 = new L.geoJson(json_Lesionesdolosas_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Lesionesdolosas_4',
+            layerName: 'layer_Lesionesdolosas_4',
+            pane: 'pane_Lesionesdolosas_4',
+            onEachFeature: pop_Lesionesdolosas_4,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Lesionesdolosas_4_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Lesionesdolosas_4);
+        map.addLayer(layer_Lesionesdolosas_4);
+        function pop_Homicidio_5(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Carpeta</th>\
+                        <td>' + (feature.properties['Carpeta'] !== null ? autolinker.link(feature.properties['Carpeta'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Fecha inicio</th>\
+                        <td>' + (feature.properties['Fecha inicio'] !== null ? autolinker.link(feature.properties['Fecha inicio'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Fecha hechos</th>\
+                        <td>' + (feature.properties['Fecha hechos'] !== null ? autolinker.link(feature.properties['Fecha hechos'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Hora hechos</th>\
+                        <td>' + (feature.properties['Hora hechos'] !== null ? autolinker.link(feature.properties['Hora hechos'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Exordio</th>\
+                        <td>' + (feature.properties['Exordio'] !== null ? autolinker.link(feature.properties['Exordio'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Alcaldía</th>\
+                        <td>' + (feature.properties['Alcaldía'] !== null ? autolinker.link(feature.properties['Alcaldía'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Colonia</th>\
+                        <td>' + (feature.properties['Colonia'] !== null ? autolinker.link(feature.properties['Colonia'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Homicidio_5_0() {
+            return {
+                pane: 'pane_Homicidio_5',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(227,26,28,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Homicidio_5');
+        map.getPane('pane_Homicidio_5').style.zIndex = 405;
+        map.getPane('pane_Homicidio_5').style['mix-blend-mode'] = 'normal';
+        var layer_Homicidio_5 = new L.geoJson(json_Homicidio_5, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Homicidio_5',
+            layerName: 'layer_Homicidio_5',
+            pane: 'pane_Homicidio_5',
+            onEachFeature: pop_Homicidio_5,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Homicidio_5_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Homicidio_5);
+        map.addLayer(layer_Homicidio_5);
+        var overlaysTree = [
+            {label: '<img src="legend/Homicidio_5.png" /> Homicidio', layer: layer_Homicidio_5},
+            {label: '<img src="legend/Lesionesdolosas_4.png" /> Lesiones dolosas', layer: layer_Lesionesdolosas_4},
+            {label: '<img src="legend/Alcaldias_3.png" /> Alcaldias', layer: layer_Alcaldias_3},
+            {label: '<img src="legend/Sectores_2.png" /> Sectores', layer: layer_Sectores_2},
+            {label: 'Delitos por colonia (1 ene - 31 oct)<br /><table><tr><td style="text-align: center;"><img src="legend/Delitosporcolonia1ene31oct_1_070.png" /></td><td>0 - 7</td></tr><tr><td style="text-align: center;"><img src="legend/Delitosporcolonia1ene31oct_1_7181.png" /></td><td>7 - 18</td></tr><tr><td style="text-align: center;"><img src="legend/Delitosporcolonia1ene31oct_1_18362.png" /></td><td>18 - 36</td></tr><tr><td style="text-align: center;"><img src="legend/Delitosporcolonia1ene31oct_1_36863.png" /></td><td>36 - 86</td></tr><tr><td style="text-align: center;"><img src="legend/Delitosporcolonia1ene31oct_1_861934.png" /></td><td>86 - 193</td></tr></table>', layer: layer_Delitosporcolonia1ene31oct_1},
+            {label: "Positron", layer: layer_Positron_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: false, 
+        });
+        lay.addTo(map);
+		document.addEventListener("DOMContentLoaded", function() {
+            // set new Layers List height which considers toggle icon
+            function newLayersListHeight() {
+                var layerScrollbarElement = document.querySelector('.leaflet-control-layers-scrollbar');
+                if (layerScrollbarElement) {
+                    var layersListElement = document.querySelector('.leaflet-control-layers-list');
+                    var originalHeight = layersListElement.style.height 
+                        || window.getComputedStyle(layersListElement).height;
+                    var newHeight = parseFloat(originalHeight) - 50;
+                    layersListElement.style.height = newHeight + 'px';
+                }
+            }
+            var isLayersListExpanded = true;
+            var controlLayersElement = document.querySelector('.leaflet-control-layers');
+            var toggleLayerControl = document.querySelector('.leaflet-control-layers-toggle');
+            // toggle Collapsed/Expanded and apply new Layers List height
+            toggleLayerControl.addEventListener('click', function() {
+                if (isLayersListExpanded) {
+                    controlLayersElement.classList.remove('leaflet-control-layers-expanded');
+                } else {
+                    controlLayersElement.classList.add('leaflet-control-layers-expanded');
+                }
+                isLayersListExpanded = !isLayersListExpanded;
+                newLayersListHeight()
+            });	
+			// apply new Layers List height if toggle layerstree
+			if (controlLayersElement) {
+				controlLayersElement.addEventListener('click', function(event) {
+					var toggleLayerHeaderPointer = event.target.closest('.leaflet-layerstree-header-pointer span');
+					if (toggleLayerHeaderPointer) {
+						newLayersListHeight();
+					}
+				});
+			}
+            // Collapsed/Expanded at Start to apply new height
+            setTimeout(function() {
+                toggleLayerControl.click();
+            }, 10);
+            setTimeout(function() {
+                toggleLayerControl.click();
+            }, 10);
+            // Collapsed touch/small screen
+            var isSmallScreen = window.innerWidth < 650;
+            if (isSmallScreen) {
+                setTimeout(function() {
+                    controlLayersElement.classList.remove('leaflet-control-layers-expanded');
+                    isLayersListExpanded = !isLayersListExpanded;
+                }, 500);
+            }  
+        });       
+        setBounds();
+        var i = 0;
+        layer_Sectores_2.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['nombre_sec'] !== null?String('<div style="color: #8e1d83; font-size: 10pt; font-weight: bold; font-family: \'Open Sans\', sans-serif;">' + layer.feature.properties['nombre_sec']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_Sectores_2'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+        resetLabels([layer_Sectores_2]);
+        map.on("zoomend", function(){
+            resetLabels([layer_Sectores_2]);
+        });
+        map.on("layeradd", function(){
+            resetLabels([layer_Sectores_2]);
+        });
+        map.on("layerremove", function(){
+            resetLabels([layer_Sectores_2]);
+        });
+        </script>
+    </body>
+</html>
